@@ -90,6 +90,11 @@ app.use(
     secret: process.env.SESSION_SECRET || 'blogsecret',
     resave: false,
     saveUninitialized: false,
+    proxy: true,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    }
   })
 );
 

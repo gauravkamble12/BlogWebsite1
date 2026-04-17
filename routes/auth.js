@@ -34,7 +34,9 @@ router.get("/login", (req, res) => {
 // REGISTER
 router.post("/register", upload.single("profilePicture"), registerValidation, async (req, res) => {
   try {
-    const { name, email, password, profession } = req.body;
+    const { name, password, profession } = req.body;
+    const email = req.body.email.toLowerCase();
+
     const profilePicture = req.file ? req.file.filename : "";
 
     const existingUser = await User.findOne({ email });
@@ -52,20 +54,33 @@ router.post("/register", upload.single("profilePicture"), registerValidation, as
       profilePicture,
     });
 
-    sendWelcomeEmail(email, name);
+    try {
+      await sendWelcomeEmail(email, name);
+    } catch (emailErr) {
+      console.error('Non-critical email failure:', emailErr);
+    }
 
     return res.status(200).json({ success: true, redirectUrl: "/login" });
   } catch (err) {
-    console.error('Registration error:', err);
-    return res.status(500).json({ error: 'Registration failed' });
+    console.error('Registration server error:', err);
+    return res.status(500).json({ error: 'Database or server error occurred during registration' });
   }
 });
 
 // LOGIN
 router.post("/login", loginValidation, async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const email = req.body.email.toLowerCase();
+    const user = await User.findOne({ email });
+    
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    // CRITICAL: Handle users who signed up via Google (they don't have a password)
+    if (!user.password) {
+      return res.status(400).json({ 
+        error: "This account uses Google Sign-In. Please click 'Continue with Google' to log in." 
+      });
+    }
 
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
