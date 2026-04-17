@@ -1,0 +1,73 @@
+//MODEL
+const mongoose = require("mongoose");
+
+const chatSchema = new mongoose.Schema({
+  from: {
+    type: String,
+    required: true,
+  },
+  to: {
+    type: String,
+    required: true,
+  },
+  msg: {
+    type: String,
+    maxLength: 50,
+  },
+  time: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Chat = mongoose.model("Chat", chatSchema);
+
+module.exports = Chat;
+
+
+//Initialize with data
+const mongoose=require('mongoose');
+const Chat=require('./models/chat');
+main().then((res)=>
+    console.log('database connected')).catch((error)=>
+    console.log(error)
+);
+async function main(){
+    await mongoose.connect('mongodb://127.0.0.1:27017/gk');
+};
+// let chat=new Chat({
+//     from:'user1',
+//     to:'user2',
+//     msg:'hello there',
+//     time:Date.now(),
+// });
+// chat.save().then((res)=>{
+//     console.log(res);
+// }).catch((error)=>{
+//     console.log(error);
+// });
+let allchats=[
+    {
+        from:'gaurav',
+        to:'ankit',
+        msg:'hi ankit', 
+        time:Date.now(),
+    },
+    {   
+        from:'ankit',
+        to:'gaurav',
+        msg:'hello gaurav', 
+        time:Date.now(),    
+    },
+    {
+        from:'gaurav',
+        to:'ankit',
+        msg:'how are you?', 
+        time:Date.now(),    
+    }
+];
+Chat.insertMany(allchats).then((res)=>{
+    console.log(res);
+}).catch((error)=>{
+    console.log(error);
+});

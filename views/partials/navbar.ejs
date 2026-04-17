@@ -1,0 +1,99 @@
+<nav>
+  <div class="logo">
+    <a href="/" class="gradient-text">GK BLOG.</a>
+  </div>
+
+  <div class="nav-links">
+    <form action="/" method="GET" style="position: relative; display: flex; align-items: center;">
+      <input type="text" name="search" id="blogSearch" placeholder="Find stories..." value="<%= typeof search !== 'undefined' ? search : '' %>"
+        style="background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 50px; color: var(--text-main); width: 240px; outline: none; transition: all 0.3s; font-size: 0.9rem;">
+      <button type="submit" style="position: absolute; right: 15px; background: none; border: none; cursor: pointer; color: var(--text-muted);">🔍</button>
+    </form>
+    
+    <% if (!user) { %>
+      <a href="/login">Login</a>
+      <a href="/register" class="btn-primary" style="padding: 10px 24px; text-decoration: none;">Join</a>
+    <% } else { %>
+      <a href="/dashboard" style="font-weight: 700; color: var(--primary);">Dashboard</a>
+      <a href="/blogs/new">Write</a>
+      <div style="display: flex; align-items: center; gap: 12px; margin-left: 20px;">
+        <a href="/profile" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.8rem; border: 2px solid var(--glass-border); overflow: hidden;">
+            <% if (user.profilePicture) { %>
+              <img src="<%= user.profilePicture.startsWith('http') ? user.profilePicture : '/uploads/profiles/' + user.profilePicture %>" style="width: 100%; height: 100%; object-fit: cover;">
+            <% } else { %>
+              <%= user.name.charAt(0).toUpperCase() %>
+            <% } %>
+          </div>
+          <span style="color: var(--text-main); font-weight: 600; font-size: 0.9rem;"><%= user.name.split(' ')[0] %></span>
+        </a>
+        <a href="/logout" style="color: var(--accent); font-size: 0.85rem; font-weight: 700;">Sign Out</a>
+      </div>
+    <% } %>
+    
+    <button id="theme-toggle" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: background-color 0.3s;">
+      <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="17.78" x2="5.64" y2="16.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+    </button>
+
+    <button onclick="toggleBell()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; position: relative;">
+      🔔
+      <div id="notif-dot" style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: none;"></div>
+    </button>
+  </div>
+</nav>
+
+<div id="bell-menu" style="position: fixed; top: 90px; right: 6%; width: 300px; background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); display: none; z-index: 1001; padding: 20px; box-shadow: var(--shadow-lg);">
+  <h4 style="margin-bottom: 15px; font-weight: 800;">Recent Notifications</h4>
+  <div id="notifications-list" style="display: flex; flex-direction: column; gap: 12px;">
+    <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
+      <% notifications.forEach(n => { %>
+        <a href="<%= n.link %>" style="padding: 12px; background: rgba(0,0,0,0.03); border-radius: var(--radius-sm); text-decoration: none; color: var(--text-muted); font-size: 0.85rem; transition: all 0.2s;">
+          <%= n.message %>
+        </a>
+      <% }) %>
+    <% } else { %>
+      <p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">All caught up!</p>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  function toggleBell() {
+    const menu = document.getElementById('bell-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // Socket and notification handling
+  document.addEventListener("DOMContentLoaded", () => {
+    const userId = "<%= user ? user._id : '' %>";
+    if (userId) {
+      const socket = io();
+      socket.emit("join", userId);
+      socket.on("notification", (notification) => {
+        document.getElementById('notif-dot').style.display = 'block';
+        // toast logic here...
+      });
+    }
+    
+    // Search highlight
+    const searchInput = document.getElementById('blogSearch');
+    searchInput.addEventListener('focus', () => {
+      searchInput.style.width = '300px';
+      searchInput.style.borderColor = 'var(--primary)';
+    });
+    searchInput.addEventListener('blur', () => {
+      searchInput.style.width = '240px';
+      searchInput.style.borderColor = 'var(--glass-border)';
+    });
+  });
+</script>

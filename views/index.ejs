@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head") %>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <%- include("partials/navbar") %>
+
+  <main class="container">
+    <header style="padding: 100px 0 60px; text-align: center;">
+      <span style="color: var(--primary); font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 20px; display: block;">2026 Editorial Edition</span>
+      <h1 class="gradient-text" style="font-size: clamp(3rem, 8vw, 6rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.06em; margin-bottom: 30px;">Curated Stories<br>& Perspectives.</h1>
+      <p style="color: var(--text-muted); font-size: 1.25rem; max-width: 600px; margin: 0 auto;">A premium platform for the modern mind. Explore thoughts that matter, designed for deep engagement.</p>
+    </header>
+
+    <% if (blogs && blogs.length > 0 && !category && !search && currentPage === 1) { %>
+      <% const featured = blogs[0]; %>
+      <section class="hero-featured animate-up" style="margin-bottom: 80px;">
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); min-height: 500px; box-shadow: var(--shadow-lg);">
+          <a href="/blogs/<%= featured._id %>" style="position: relative; overflow: hidden; display: block; height: 100%;">
+            <img src="<%= featured.images && featured.images.length > 0 ? (featured.images[0].startsWith('http') ? featured.images[0] : '/uploads/' + featured.images[0]) : '/uploads/default-blog.jpg' %>" 
+                 style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" class="hero-img">
+            <div style="position: absolute; top: 30px; left: 30px;">
+              <span class="category-badge" style="background: white; color: var(--text-main); backdrop-filter: var(--glass-blur);">Featured Story</span>
+            </div>
+          </a>
+          <div style="padding: 60px; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; color: var(--primary); font-weight: 700; font-size: 0.9rem;">
+              <span><%= featured.category %></span>
+              <span style="width: 4px; height: 4px; background: currentColor; border-radius: 50%;"></span>
+              <span><%= featured.readingTime %> min read</span>
+            </div>
+            <h2 style="font-size: 3rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; color: var(--text-main);">
+              <a href="/blogs/<%= featured._id %>" style="text-decoration: none; color: inherit;"><%= featured.title %></a>
+            </h2>
+            <p style="color: var(--text-muted); font-size: 1.15rem; line-height: 1.6;">
+              <%= featured.content.replace(/<[^>]*>/g, ' ').substring(0, 180) %>...
+            </p>
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 20px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary); overflow: hidden;">
+                <% if (featured.author && featured.author.profilePicture) { %>
+                  <img src="<%= featured.author.profilePicture.startsWith('http') ? featured.author.profilePicture : '/uploads/profiles/' + featured.author.profilePicture %>" style="width: 100%; height: 100%; object-fit: cover;">
+                <% } %>
+              </div>
+              <div>
+                <div style="font-weight: 800; font-size: 1rem;"><%= featured.author ? featured.author.name : 'Author' %></div>
+                <div style="color: var(--text-muted); font-size: 0.85rem;"><%= new Date(featured.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    <% } %>
+
+    <!-- Feed Tab Switcher -->
+    <% if (user) { %>
+      <div style="display: flex; gap: 40px; border-bottom: 1px solid var(--glass-border); margin-bottom: 20px;">
+        <a href="/" style="padding: 15px 0; font-weight: 800; font-size: 1.1rem; text-decoration: none; color: <%= !req.query.feed ? 'var(--primary)' : 'var(--text-muted)' %>; border-bottom: 2px solid <%= !req.query.feed ? 'var(--primary)' : 'transparent' %>; transition: all 0.3s;">Discover</a>
+        <a href="/?feed=following" style="padding: 15px 0; font-weight: 800; font-size: 1.1rem; text-decoration: none; color: <%= req.query.feed === 'following' ? 'var(--primary)' : 'var(--text-muted)' %>; border-bottom: 2px solid <%= req.query.feed === 'following' ? 'var(--primary)' : 'transparent' %>; transition: all 0.3s;">My Feed</a>
+      </div>
+    <% } %>
+
+    <!-- Category Filter Glass -->
+    <div style="display: flex; gap: 12px; overflow-x: auto; padding: 20px 0 40px; scrollbar-width: none; border-bottom: 1px solid var(--glass-border); margin-bottom: 40px;">
+      <a href="/<%= req.query.feed ? '?feed=' + req.query.feed : '' %>" class="btn-primary" style="background: <%= !category ? 'var(--primary)' : 'rgba(0,0,0,0.03)' %>; color: <%= !category ? 'white' : 'var(--text-main)' %>; padding: 10px 24px; font-size: 0.9rem; text-decoration: none; border-radius: 50px;">All Stories</a>
+      <% ['Technology', 'Lifestyle', 'Travel', 'Food', 'Business', 'Health'].forEach(cat => { %>
+        <a href="/?category=<%= cat %><%= req.query.feed ? '&feed=' + req.query.feed : '' %>" class="btn-primary" style="background: <%= category === cat ? 'var(--primary)' : 'rgba(0,0,0,0.03)' %>; color: <%= category === cat ? 'white' : 'var(--text-main)' %>; padding: 10px 24px; font-size: 0.9rem; text-decoration: none; border-radius: 50px;"><%= cat %></a>
+      <% }) %>
+    </div>
+
+    <% if (!blogs || blogs.length === 0) { %>
+      <div style="padding: 100px 0; text-align: center; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+        <h2 style="font-size: 2rem; margin-bottom: 20px;">The library is currently quiet.</h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">Be the first to share a story with the world.</p>
+        <a href="/blogs/new" class="btn-primary" style="text-decoration: none; color: white;">Write a Story</a>
+      </div>
+    <% } else { %>
+      <div class="bento-grid">
+        <% 
+          // If we showed a featured blog, we skip it in the grid for the first page
+          const displayBlogs = (currentPage === 1 && !category && !search) ? blogs.slice(1) : blogs;
+        %>
+        <% displayBlogs.forEach((blog, index) => { %>
+          <div class="bento-card animate-up" style="animation-delay: <%= index * 0.1 %>s;">
+            <!-- Clickable Image Slider -->
+            <a href="/blogs/<%= blog._id %>" class="slider-container">
+              <% if (blog.images && blog.images.length > 0) { %>
+                <% blog.images.forEach((img, i) => { %>
+                  <img src="<%= img.startsWith('http') ? img : '/uploads/' + img %>" class="slider-img <%= i === 0 ? 'active' : '' %>" alt="<%= blog.title %>">
+                <% }) %>
+              <% } else { %>
+                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                  No Image Available
+                </div>
+              <% } %>
+            </a>
+
+            <div class="card-content">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="category-badge"><%= blog.category || 'Story' %></span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;"><%= blog.readingTime %> min read</span>
+              </div>
+              <h3 style="font-size: 1.4rem; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">
+                <a href="/blogs/<%= blog._id %>" style="text-decoration: none; color: var(--text-main);"><%= blog.title %></a>
+              </h3>
+              
+              <p class="blog-excerpt">
+                <% 
+                  let excerpt = blog.content.replace(/<[^>]*>/g, ' '); 
+                  excerpt = excerpt.replace(/&nbsp;/g, ' ')
+                                  .replace(/&amp;/g, '&')
+                                  .replace(/&lt;/g, '<')
+                                  .replace(/&gt;/g, '>')
+                                  .replace(/&quot;/g, '"')
+                                  .replace(/&#39;/g, "'");
+                %>
+                <%= excerpt %>
+              </p>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; overflow: hidden; border: 1px solid var(--glass-border);">
+                    <% if (blog.author && blog.author.profilePicture) { %>
+                      <img src="<%= blog.author.profilePicture.startsWith('http') ? blog.author.profilePicture : '/uploads/profiles/' + blog.author.profilePicture %>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <% } else { %>
+                      <%= blog.author ? blog.author.name.charAt(0).toUpperCase() : '?' %>
+                    <% } %>
+                  </div>
+                  <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);"><%= blog.author ? blog.author.name : 'Unknown' %></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <button class="like-btn" data-blog="<%= blog._id %>" style="background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--accent); transition: transform 0.2s;">
+                    ❤️ <small class="like-count" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><%= blog.likesCount %></small>
+                  </button>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);"><%= new Date(blog.createdAt).toLocaleDateString() %></span>
+                </div>
+              </div>
+
+              <% if (user && blog.author && user._id.toString() === blog.author._id.toString()) { %>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                  <a href="/blogs/<%= blog._id %>/edit" style="font-size: 0.75rem; color: var(--primary); font-weight: 700; text-decoration: none;">Edit</a>
+                  <form action="/blogs/<%= blog._id %>/delete" method="POST" onsubmit="return confirm('Delete this story?')" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; color: var(--accent); font-size: 0.75rem; cursor: pointer; font-weight: 700; padding: 0;">Delete</button>
+                  </form>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <% if (totalPages > 1) { %>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 60px;">
+          <% if (currentPage > 1) { %>
+            <a href="/?page=<%= currentPage - 1 %>" class="btn-primary" style="background: rgba(255,255,255,0.05); text-decoration: none;">Prev</a>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+            <a href="/?page=<%= currentPage + 1 %>" class="btn-primary" style="text-decoration: none;">Next</a>
+          <% } %>
+        </div>
+      <% } %>
+    <% } %>
+
+    <!-- Professional Newsletter Light Panel -->
+    <div style="margin-top: 100px; background: #f8fafc; border: 1px solid var(--glass-border); padding: 80px 40px; border-radius: var(--radius-lg); text-align: center; position: relative; overflow: hidden; box-shadow: var(--shadow-sm);">
+      <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(99, 102, 241, 0.05), transparent 50%); z-index: -1;"></div>
+      <h2 style="font-size: 3rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.04em; color: var(--text-main);">Join the Inner Circle.</h2>
+      <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto;">Weekly insights, deep dives, and perspectives delivered directly to your inbox.</p>
+      <form id="newsletter-form" style="display: flex; gap: 12px; max-width: 500px; margin: 0 auto;">
+        <input type="email" id="subscriber-email" placeholder="you@example.com" required style="flex: 1; padding: 16px 24px; border-radius: 50px; border: 1px solid var(--glass-border); background: white; color: var(--text-main);">
+        <button type="submit" class="btn-primary">Subscribe</button>
+      </form>
+      <div id="newsletter-message" style="margin-top: 20px; display: none; font-weight: 700;"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="logo">GK BLOG.</div>
+      <p style="color: var(--text-muted); margin-top: 20px;">© 2026 Crafted with Passion for the Modern Reader.</p>
+    </div>
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/slider.js"></script>
+  <script src="/js/like.js"></script>
+  <script>
+    // Theme Handling (Now defaulting to dark for WOW effect)
+    document.addEventListener('DOMContentLoaded', () => {
+      // Newsletter Handling
+      const newsForm = document.getElementById('newsletter-form');
+      if (newsForm) {
+        newsForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('subscriber-email').value;
+          const msgDiv = document.getElementById('newsletter-message');
+          try {
+            const res = await fetch('/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            msgDiv.textContent = data.message;
+            msgDiv.style.display = 'block';
+            msgDiv.style.color = data.status === 'success' ? '#4ade80' : '#f87171';
+            if (data.status === 'success') { newsForm.reset(); }
+          } catch (err) { console.error(err); }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

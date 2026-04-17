@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head") %>
+  <style>
+    .error-wrapper {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: radial-gradient(circle at top left, #eef2ff, transparent 40%),
+                  radial-gradient(circle at bottom right, #f5f3ff, transparent 40%);
+    }
+    .error-card {
+      max-width: 500px;
+      text-align: center;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      padding: 4rem 2rem;
+      box-shadow: var(--shadow-card);
+    }
+    .error-code {
+      font-size: 8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+    .error-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+    .error-msg {
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      font-size: 1.1rem;
+    }
+    .back-btn {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <%- include("partials/navbar") %>
+  
+  <div class="error-wrapper">
+    <div class="error-card">
+      <div class="error-code">404</div>
+      <h1 class="error-title">Story Not Found</h1>
+      <p class="error-msg">Oops! It seems like the page you are looking for has been moved or deleted. Let's get you back on track.</p>
+      <a href="/" class="back-btn">Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>

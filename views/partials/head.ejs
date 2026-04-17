@@ -1,0 +1,50 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Core SEO -->
+<title><%= typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog') %> | Insights for the Modern Mind</title>
+<meta name="description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore a curated collection of stories, deep dives, and perspectives on technology, lifestyle, and design.' %>">
+
+<!-- OpenGraph / Social Media -->
+<meta property="og:type" content="<%= typeof blog !== 'undefined' ? 'article' : 'website' %>">
+<meta property="og:title" content="<%= typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog') %>">
+<meta property="og:description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore thoughts that matter, designed for deep engagement.' %>">
+<meta property="og:image" content="<%= (typeof blog !== 'undefined' && blog.images && blog.images.length > 0) ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>">
+<meta property="og:url" content="https://gkblog.com<%= typeof blog !== 'undefined' ? '/blogs/' + blog._id : '' %>">
+<meta property="og:site_name" content="GK BLOG">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= typeof blog !== 'undefined' ? blog.title : 'GK Blog' %>">
+<meta name="twitter:description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Insights for the modern mind.' %>">
+<meta name="twitter:image" content="<%= (typeof blog !== 'undefined' && blog.images && blog.images.length > 0) ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>">
+
+<!-- Structured Data -->
+<% if (typeof blog !== 'undefined') { %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "<%= blog.title %>",
+  "image": "<%= blog.images && blog.images.length > 0 ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>",
+  "author": {
+    "@type": "Person",
+    "name": "<%= blog.author ? blog.author.name : 'GK' %>"
+  },
+  "datePublished": "<%= blog.createdAt %>",
+  "description": "<%= blog.content.replace(/<[^>]*>/g, '').substring(0, 160) %>"
+}
+</script>
+<% } %>
+
+<!-- Standard Links -->
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" href="/favicon.ico">
+
+<!-- Theme Initialization (Prevents Flash) -->
+<script>
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  })();
+</script>

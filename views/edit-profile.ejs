@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head") %>
+  <style>
+    .edit-container {
+      max-width: 600px;
+      margin: 120px auto 80px;
+      padding: 40px;
+      background: white;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: #f8fafc;
+      font-size: 1rem;
+      color: var(--text-main);
+      transition: all 0.3s;
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+    .file-input-wrapper {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      border: 2px dashed var(--glass-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+    .file-input-wrapper:hover {
+      border-color: var(--primary);
+      background: rgba(37, 99, 235, 0.05);
+    }
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .preview-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 2px solid white;
+      box-shadow: var(--shadow-md);
+    }
+  </style>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <%- include("partials/navbar") %>
+
+  <main class="container">
+    <div class="edit-container animate-up">
+      <h1 class="gradient-text" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Refine Your Persona</h1>
+      <p style="color: var(--text-muted); margin-bottom: 40px;">Update your presence in the digital collective.</p>
+
+      <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="profilePicture">Profile Portrait</label>
+          <div class="file-input-wrapper" id="dropZone">
+            <% if (user.profilePicture) { %>
+              <img src="<%= user.profilePicture.startsWith('http') ? user.profilePicture : '/uploads/profiles/' + user.profilePicture %>" id="imgPreview" class="preview-img">
+            <% } else { %>
+              <div id="placeholder" style="font-size: 2rem; margin-bottom: 10px;">👤</div>
+            <% } %>
+            <span id="fileName" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Drag or click to upload</span>
+            <input type="file" name="profilePicture" id="fileInput" accept="image/*">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" value="<%= user.name %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="profession">Profession / Title</label>
+          <input type="text" id="profession" name="profession" value="<%= user.profession %>" placeholder="e.g. Design Enthusiast, Tech Strategist">
+        </div>
+
+        <div style="display: flex; gap: 16px; margin-top: 40px;">
+          <button type="submit" class="btn-primary" style="flex: 2; padding: 16px;">Update Profile</button>
+          <a href="/profile/<%= user._id %>" class="btn-primary" style="flex: 1; padding: 16px; background: #64748b; text-align: center; text-decoration: none;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const imgPreview = document.getElementById('imgPreview');
+    const fileName = document.getElementById('fileName');
+    const dropZone = document.getElementById('dropZone');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        fileName.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (imgPreview) {
+            imgPreview.src = e.target.result;
+          } else {
+            const newImg = document.createElement('img');
+            newImg.id = 'imgPreview';
+            newImg.className = 'preview-img';
+            newImg.src = e.target.result;
+            document.getElementById('placeholder')?.remove();
+            dropZone.prepend(newImg);
+          }
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>

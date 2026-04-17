@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .form-group {
+      margin-bottom: 2rem;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+      color: var(--text-muted);
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 1.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: #f8fafc;
+      color: var(--text-main);
+      font-size: 1rem;
+      font-family: var(--font-body);
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* Quill Editor Light Polish */
+    #editor {
+      height: 450px;
+      background: white;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      border: 1px solid var(--glass-border) !important;
+      font-family: var(--font-body);
+      font-size: 1.15rem;
+      color: var(--text-main);
+    }
+    .ql-toolbar {
+      background: #f1f5f9 !important;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      border: 1px solid var(--glass-border) !important;
+    }
+    .ql-stroke { stroke: var(--text-main) !important; }
+    .ql-fill { fill: var(--text-main) !important; }
+    .ql-picker { color: var(--text-main) !important; }
+  </style>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+  <%- include("../partials/navbar") %>
+
+  <main class="container" style="max-width: 900px; padding: 100px 0;">
+    <div class="article-glass-card animate-up">
+      <header style="margin-bottom: 4rem;">
+        <span class="category-badge" style="margin-bottom: 1.5rem;">Revision Suite</span>
+        <h1 class="gradient-text" style="font-size: 3.5rem; font-weight: 800; line-height: 1; letter-spacing: -0.05em;">Refine Your Work.</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 1rem;">Polishing your perspective for a global audience.</p>
+      </header>
+      
+      <form id="blogForm" action="/blogs/<%= blog._id %>/update" method="POST">
+        <div class="form-group">
+          <label>Headline</label>
+          <input type="text" name="title" value="<%= blog.title %>" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div class="form-group">
+            <label>Context / Category</label>
+            <select name="category">
+              <option value="Technology" <%= blog.category === 'Technology' ? 'selected' : '' %>>Technology</option>
+              <option value="Lifestyle" <%= blog.category === 'Lifestyle' ? 'selected' : '' %>>Lifestyle</option>
+              <option value="Travel" <%= blog.category === 'Travel' ? 'selected' : '' %>>Travel</option>
+              <option value="Food" <%= blog.category === 'Food' ? 'selected' : '' %>>Food</option>
+              <option value="Business" <%= blog.category === 'Business' ? 'selected' : '' %>>Business</option>
+              <option value="Health" <%= blog.category === 'Health' ? 'selected' : '' %>>Health</option>
+              <option value="Other" <%= blog.category === 'Other' ? 'selected' : '' %>>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tags</label>
+            <input type="text" name="tags" value="<%= blog.tags ? blog.tags.join(', ') : '' %>">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 3rem;">
+          <label>The Narrative</label>
+          <div id="editor"><%- blog.content %></div>
+          <input type="hidden" name="content" id="content">
+        </div>
+
+        <div style="margin-top: 4rem; display: flex; gap: 20px;">
+          <button type="submit" class="btn-primary" style="flex: 2; padding: 20px;">Save Changes</button>
+          <a href="javascript:history.back()" style="flex: 1; display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted); font-weight: 700; border: 1px solid var(--glass-border); border-radius: 50px;">Discard</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.min.js"></script>
+  <script>
+    try {
+      var quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Continue your journey here...',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        }
+      });
+
+      function selectLocalImage() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = () => {
+          const file = input.files[0];
+          if (/^image\//.test(file.type)) {
+            saveToServer(file);
+          } else {
+            Swal.fire({ icon: 'error', text: 'Please select an image file.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+          }
+        };
+      }
+
+      async function saveToServer(file) {
+        const fd = new FormData();
+        fd.append('image', file);
+
+        try {
+          Swal.fire({
+            title: 'Uploading...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+          });
+
+          const res = await fetch('/api/upload-image', {
+            method: 'POST',
+            body: fd
+          });
+
+          const data = await res.json();
+          Swal.close();
+
+          if (res.ok) {
+            const range = quill.getSelection();
+            quill.insertEmbed(range.index, 'image', data.url);
+          } else {
+            Swal.fire({ icon: 'error', text: data.error || 'Upload failed', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+          }
+        } catch (err) {
+          Swal.close();
+          Swal.fire({ icon: 'error', text: 'Connection error during upload.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+        }
+      }
+
+      quill.getModule('toolbar').addHandler('image', () => {
+        selectLocalImage();
+      });
+
+      document.getElementById('blogForm').onsubmit = async function(e) {
+        e.preventDefault();
+        var content = document.querySelector('#content');
+        content.value = quill.root.innerHTML;
+
+        const formData = new FormData(this);
+        // Convert FormData to JSON for update since we aren't handling files on update route yet
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch(this.action, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Changes Saved!',
+              text: 'Redirecting...',
+              timer: 1500,
+              showConfirmButton: false,
+              toast: true,
+              position: 'top-end'
+            }).then(() => {
+              window.location.href = result.redirectUrl;
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Update Failed',
+              text: result.error || 'Something went wrong',
+              toast: true,
+              position: 'top-end',
+              timer: 3000,
+              showConfirmButton: false
+            });
+          }
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Connection error.',
+            toast: true,
+            position: 'top-end',
+            timer: 3000,
+            showConfirmButton: false
+          });
+        }
+      };
+    } catch (e) {
+      console.error("Editor Load Error:", e);
+    }
+  </script>
+</body>
+</html>

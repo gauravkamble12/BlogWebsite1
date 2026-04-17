@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <style>
+    .reading-progress-bar {
+      position: fixed;
+      top: 0; left: 0; width: 0%; height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      z-index: 2000;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    }
+    .cinematic-hero {
+      height: 90vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 10%;
+    }
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.4) saturate(1.2);
+    }
+    .article-glass-card {
+      background: white;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 80px;
+      margin-top: -150px;
+      position: relative;
+      z-index: 10;
+      box-shadow: var(--shadow-lg);
+    }
+    @media (max-width: 768px) {
+      .article-glass-card { padding: 40px 20px; border-radius: var(--radius-md); margin-top: -50px; }
+      .cinematic-hero { height: 60vh; padding: 0 20px; }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reply-container {
+      margin-left: 55px;
+      margin-top: 15px;
+      padding-left: 20px;
+      border-left: 2px solid var(--glass-border);
+    }
+    .reply-form-container {
+      margin-top: 10px;
+      margin-left: 55px;
+      display: none;
+    }
+    .reply-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="reading-progress-bar" id="reading-bar"></div>
+  <div class="mesh-bg"></div>
+  <%- include("../partials/navbar") %>
+
+  <header class="cinematic-hero">
+    <% if (blog.images && blog.images.length > 0) { %>
+      <img src="<%= blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0] %>" class="hero-img" alt="<%= blog.title %>">
+
+    <% } else { %>
+      <div class="hero-img" style="background: linear-gradient(135deg, #0f172a, #1e293b);"></div>
+    <% } %>
+    
+    <div class="container" style="max-width: 1000px; margin: 0;">
+      <span class="category-badge animate-up" style="margin-bottom: 24px;"><%= blog.category %></span>
+      <h1 class="gradient-text animate-up" style="font-size: clamp(3rem, 8vw, 6.5rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.05em; margin-bottom: 30px;">
+        <%= blog.title %>
+      </h1>
+      <div class="animate-up" style="display: flex; align-items: center; gap: 24px; color: rgba(255,255,255,0.9); font-weight: 600;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white;">
+            <%= blog.author ? blog.author.name.charAt(0).toUpperCase() : '?' %>
+          </div>
+          <span style="color: white; font-size: 1.1rem;"><%= blog.author ? blog.author.name : 'Unknown' %></span>
+          
+          <% if (user && blog.author && user._id.toString() !== blog.author._id.toString()) { %>
+            <button id="follow-btn" 
+                    data-author-id="<%= blog.author._id %>"
+                    data-following="<%= blog.isFollowing %>"
+                    class="btn-primary" 
+                    style="margin-left: 20px; padding: 6px 18px; font-size: 0.8rem; background: <%= blog.isFollowing ? 'transparent' : 'var(--primary)' %>; border: 1px solid var(--primary); color: white; border-radius: 20px;">
+              <%= blog.isFollowing ? 'Following' : 'Follow' %>
+            </button>
+          <% } %>
+        </div>
+        <span>•</span>
+        <span><%= new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
+        <span>•</span>
+        <span style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px;"><%= blog.readingTime %> min read</span>
+      </div>
+
+      <% if (user && blog.author && user._id.toString() === blog.author._id.toString()) { %>
+        <div class="animate-up" style="margin-top: 30px; display: flex; gap: 15px;">
+          <a href="/blogs/<%= blog._id %>/edit" class="btn-primary" style="background: rgba(255,255,255,0.1); padding: 10px 24px; font-size: 0.9rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.2);">Edit Perspective</a>
+          <form action="/blogs/<%= blog._id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this story?')">
+            <button type="submit" class="btn-primary" style="background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 10px 24px; font-size: 0.9rem;">Delete Story</button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+  </header>
+
+  <main class="container" style="max-width: 900px; padding-bottom: 100px;">
+    <div class="article-glass-card">
+      <article style="font-size: 1.25rem; line-height: 1.8; color: var(--text-main);">
+        <%- blog.content %>
+      </article>
+
+      <!-- Engagement Bar -->
+      <div class="blog-card" style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: transparent; border-bottom: none; box-shadow: none;">
+        <div style="display: flex; gap: 20px; align-items: center;">
+           <button class="like-btn" data-blog="<%= blog._id %>" style="background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.1); color: var(--accent); padding: 8px 16px; border-radius: 50px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; transition: all 0.3s;">
+             ❤️ <span class="like-count"><%= blog.likesCount %></span>
+           </button>
+           <span style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">💬 <%= blog.commentsCount %> Comments</span>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <a href="#" class="btn-primary" style="padding: 10px 20px; font-size: 0.9rem; text-decoration: none;">Share Story</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Section (Bento Style) -->
+    <% if (blog.relatedBlogs && blog.relatedBlogs.length > 0) { %>
+      <div style="margin-top: 100px;">
+        <h2 class="reveal" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 40px; letter-spacing: -0.03em;">Continue the Journey.</h2>
+        <div class="bento-grid" style="grid-auto-rows: 200px;">
+          <% blog.relatedBlogs.forEach(related => { %>
+            <div class="bento-card standard reveal">
+              <% if (related.images && related.images.length > 0) { %>
+                <img src="<%= related.images[0].startsWith('http') ? related.images[0] : '/uploads/' + related.images[0] %>" class="card-img" alt="<%= related.title %>">
+
+              <% } %>
+              <div class="card-content">
+                <h4 style="font-size: 1.25rem; font-weight: 800;"><a href="/blogs/<%= related._id %>" style="color: white; text-decoration: none;"><%= related.title %></a></h4>
+                <span style="font-size: 0.85rem; color: var(--text-muted);"><%= related.author ? related.author.name : 'Author' %></span>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Professional Discussion Panel -->
+    <div class="reveal" style="margin-top: 80px; background: #f8fafc; border: 1px solid var(--glass-border); padding: 50px; border-radius: var(--radius-md);">
+      <h3 style="font-size: 2rem; font-weight: 800; margin-bottom: 30px; color: var(--text-main);">Join the Discussion.</h3>
+      
+      <% if (user) { %>
+        <form onsubmit="handleCommentSubmit(event, '<%= blog._id %>')" style="margin-bottom: 50px;">
+          <textarea name="text" placeholder="Share your perspective..." required style="width: 100%; padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: white; color: var(--text-main); font-family: inherit; font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; outline: none; transition: border-color 0.3s;"></textarea>
+          <button type="submit" class="btn-primary">Post Perspective</button>
+        </form>
+      <% } else { %>
+        <div style="margin-bottom: 50px; padding: 30px; background: white; border: 1px dashed var(--glass-border); border-radius: var(--radius-sm); text-align: center;">
+          <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 20px;">You must be signed in to join the discussion.</p>
+          <a href="/login" class="btn-primary" style="text-decoration: none;">Sign In to Comment</a>
+        </div>
+      <% } %>
+
+      <div id="comments-container" style="display: flex; flex-direction: column; gap: 30px;">
+        <% if (blog.comments && blog.comments.length > 0) { %>
+          <% 
+            const rootComments = blog.comments.filter(c => !c.parent);
+            const replies = blog.comments.filter(c => c.parent);
+          %>
+          <% rootComments.forEach(comment => { %>
+            <div class="comment-root" id="comment-<%= comment._id %>">
+              <div style="display: flex; gap: 15px;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                  <%= comment.user ? comment.user.name.charAt(0).toUpperCase() : '?' %>
+                </div>
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <span style="font-weight: 700;"><%= comment.user ? comment.user.name : 'Observer' %></span>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);"><%= new Date(comment.createdAt).toLocaleDateString() %></span>
+                    <% if (user) { %>
+                      <button class="reply-btn" onclick="toggleReplyForm('<%= comment._id %>')">Reply</button>
+                    <% } %>
+                    <% if (user && comment.user && user._id.toString() === comment.user._id.toString()) { %>
+                      <form action="/comment/<%= comment._id %>/delete" method="POST" style="display: inline; margin-left: 10px;">
+                        <button type="submit" style="background: none; border: none; color: var(--accent); font-size: 0.75rem; cursor: pointer; font-weight: 700;">Delete</button>
+                      </form>
+                    <% } %>
+                  </div>
+                  <p style="color: var(--text-muted); line-height: 1.5; margin: 0;"><%= comment.text %></p>
+                </div>
+              </div>
+
+              <!-- Reply Form -->
+              <div class="reply-form-container" id="reply-form-<%= comment._id %>">
+                <form onsubmit="handleCommentSubmit(event, '<%= blog._id %>', '<%= comment._id %>')">
+                  <textarea placeholder="Write a reply..." required style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: white; font-family: inherit; font-size: 0.95rem; min-height: 80px; margin-bottom: 10px; outline: none;"></textarea>
+                  <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">Reply</button>
+                  <button type="button" class="btn-primary" onclick="toggleReplyForm('<%= comment._id %>')" style="padding: 8px 16px; font-size: 0.85rem; background: transparent; color: var(--text-muted); border-color: var(--glass-border);">Cancel</button>
+                </form>
+              </div>
+
+              <!-- Static Replies -->
+              <div class="replies-list" id="replies-to-<%= comment._id %>">
+                <% const commentReplies = replies.filter(r => r.parent.toString() === comment._id.toString()); %>
+                <% commentReplies.forEach(reply => { %>
+                  <div class="reply-container">
+                    <div style="display: flex; gap: 12px;">
+                      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">
+                        <%= reply.user ? reply.user.name.charAt(0).toUpperCase() : '?' %>
+                      </div>
+                      <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 3px;">
+                          <span style="font-weight: 700; font-size: 0.9rem;"><%= reply.user ? reply.user.name : 'Observer' %></span>
+                          <span style="font-size: 0.75rem; color: var(--text-muted);"><%= new Date(reply.createdAt).toLocaleDateString() %></span>
+                        </div>
+                        <p style="color: var(--text-muted); line-height: 1.4; font-size: 0.95rem; margin: 0;"><%= reply.text %></p>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const currentBlogId = "<%= blog._id %>";
+    const currentUserId = "<%= user ? user._id : '' %>";
+    const currentUserName = "<%= user ? user.name : '' %>";
+  </script>
+  <script src="/js/comment.js"></script>
+
+  <footer>
+    <div class="container">
+      <div class="logo">GK BLOG.</div>
+      <p style="color: var(--text-muted); margin-top: 20px;">© 2026 Crafted with Passion for the Modern Reader.</p>
+    </div>
+  </footer>
+
+  <script src="/js/like.js"></script>
+  <script>
+    // Reading Progress
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("reading-bar").style.width = scrolled + "%";
+
+      // Scroll Reveal
+      let reveals = document.querySelectorAll('.reveal');
+      for (let i = 0; i < reveals.length; i++) {
+        let windowHeight = window.innerHeight;
+        let elementTop = reveals[i].getBoundingClientRect().top;
+        let elementVisible = 150;
+        if (elementTop < windowHeight - elementVisible) {
+          reveals[i].classList.add("active");
+        }
+      }
+    };
+
+    // Follow Logic
+    const followBtn = document.getElementById('follow-btn');
+    if (followBtn) {
+      followBtn.onclick = async function() {
+        const authorId = this.dataset.authorId;
+        const isFollowing = this.dataset.following === 'true';
+        const url = isFollowing ? `/unfollow/${authorId}` : `/follow/${authorId}`;
+
+        try {
+          const res = await fetch(url, { method: 'POST' });
+          if (res.ok) {
+            const newState = !isFollowing;
+            this.dataset.following = newState;
+            this.innerText = newState ? 'Following' : 'Follow';
+            this.style.background = newState ? 'transparent' : 'var(--primary)';
+            
+            Swal.fire({
+              icon: 'success',
+              title: newState ? 'Following Authors' : 'Unfollowed',
+              toast: true,
+              position: 'top-end',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+        } catch (err) {
+          console.error('Follow Error:', err);
+        }
+      };
+    }
+  </script>
+</body>
+</html>
