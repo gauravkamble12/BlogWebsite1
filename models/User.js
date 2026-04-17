@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
     profession: String,
     profilePicture: { type: String, default: "" },
     googleId: { type: String, unique: true, sparse: true },
+    resetPasswordOTP: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true }
 );

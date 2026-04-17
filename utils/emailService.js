@@ -50,7 +50,32 @@ const sendCommentNotification = async (email, blogTitle, authorName) => {
   }
 };
 
+const sendOTPEmail = async (email, name, otp) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset PIN - Vitreous",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
+          <h2 style="color: #4338ca;">Password Reset Request</h2>
+          <p>Hi ${name},</p>
+          <p>You requested to reset your password. Use the 6-digit PIN below to proceed. This PIN will expire in 10 minutes.</p>
+          <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e293b;">${otp}</span>
+          </div>
+          <p style="color: #64748b; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+    console.log(`OTP email sent to ${email}`);
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendCommentNotification,
+  sendOTPEmail,
 };

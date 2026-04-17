@@ -3,7 +3,11 @@
     <a href="/" class="gradient-text">GK BLOG.</a>
   </div>
 
-  <div class="nav-links">
+  <div style="display: flex; align-items: center; gap: 20px;">
+    <!-- Search Trigger (Mobile Only) -->
+    <button id="mobile-search-trigger" style="display: none; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main);">🔍</button>
+
+    <div class="nav-links">
     <form action="/" method="GET" style="position: relative; display: flex; align-items: center;">
       <input type="text" name="search" id="blogSearch" placeholder="Find stories..." value="<%= typeof search !== 'undefined' ? search : '' %>"
         style="background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 50px; color: var(--text-main); width: 240px; outline: none; transition: all 0.3s; font-size: 0.9rem;">
@@ -31,26 +35,53 @@
       </div>
     <% } %>
     
-    <button id="theme-toggle" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: background-color 0.3s;">
-      <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"></circle>
-        <line x1="12" y1="1" x2="12" y2="3"></line>
-        <line x1="12" y1="21" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="3" y2="12"></line>
-        <line x1="21" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="17.78" x2="5.64" y2="16.36"></line>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-    </button>
+      <button id="theme-toggle" class="nav-icon-btn">
+        <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="17.78" x2="5.64" y2="16.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
 
-    <button onclick="toggleBell()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; position: relative;">
-      🔔
-      <div id="notif-dot" style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: none;"></div>
-    </button>
+      <button onclick="toggleBell()" class="nav-icon-btn" style="position: relative;">
+        🔔
+        <div id="notif-dot" style="position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: none; border: 2px solid white;"></div>
+      </button>
+    </div>
+
+    <!-- Hamburger Menu -->
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
   </div>
 </nav>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobileOverlay">
+  <form action="/" method="GET" style="width: 80%; margin-bottom: 40px;">
+    <input type="text" name="search" placeholder="Search Vitreous..." 
+      style="width: 100%; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); padding: 18px 24px; border-radius: 50px; color: var(--text-main); font-size: 1.1rem; outline: none;">
+  </form>
+  
+  <a href="/" class="mobile-nav-link">Home</a>
+  <% if (!user) { %>
+    <a href="/login" class="mobile-nav-link">Login</a>
+    <a href="/register" class="mobile-nav-link" style="color: var(--primary);">Join Now</a>
+  <% } else { %>
+    <a href="/dashboard" class="mobile-nav-link">Dashboard</a>
+    <a href="/blogs/new" class="mobile-nav-link">Write Story</a>
+    <a href="/profile" class="mobile-nav-link">My Profile</a>
+    <a href="/logout" class="mobile-nav-link" style="color: var(--accent);">Sign Out</a>
+  <% } %>
+</div>
 
 <div id="bell-menu" style="position: fixed; top: 90px; right: 6%; width: 300px; background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); display: none; z-index: 1001; padding: 20px; box-shadow: var(--shadow-lg);">
   <h4 style="margin-bottom: 15px; font-weight: 800;">Recent Notifications</h4>
@@ -85,15 +116,60 @@
       });
     }
     
-    // Search highlight
+    // Search highlight (Desktop)
     const searchInput = document.getElementById('blogSearch');
-    searchInput.addEventListener('focus', () => {
-      searchInput.style.width = '300px';
-      searchInput.style.borderColor = 'var(--primary)';
-    });
-    searchInput.addEventListener('blur', () => {
-      searchInput.style.width = '240px';
-      searchInput.style.borderColor = 'var(--glass-border)';
+    if (searchInput) {
+      searchInput.addEventListener('focus', () => {
+        searchInput.style.width = '300px';
+        searchInput.style.borderColor = 'var(--primary)';
+      });
+      searchInput.addEventListener('blur', () => {
+        searchInput.style.width = '240px';
+        searchInput.style.borderColor = 'var(--glass-border)';
+      });
+    }
+
+    // Mobile Navigation Toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const mobileSearchTrigger = document.getElementById('mobile-search-trigger');
+    const mobileSearchInput = mobileOverlay.querySelector('input[name="search"]');
+    
+    const toggleMenu = () => {
+      hamburger.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileOverlay.classList.contains('active') ? 'hidden' : 'auto';
+    };
+
+    hamburger.addEventListener('click', toggleMenu);
+    
+    mobileSearchTrigger.addEventListener('click', () => {
+      if (!mobileOverlay.classList.contains('active')) {
+        toggleMenu();
+      }
+      setTimeout(() => mobileSearchInput.focus(), 300);
     });
   });
 </script>
+
+<style>
+  .nav-icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    transition: all 0.3s;
+    color: var(--text-main);
+  }
+  .nav-icon-btn:hover { background: rgba(0,0,0,0.05); }
+
+  @media (max-width: 1024px) {
+    #mobile-search-trigger { display: block !important; }
+  }
+</style>

@@ -4,7 +4,7 @@ const User = require("../models/User");
 const multer = require("multer");
 const { registerValidation, loginValidation } = require("../middleware/validation");
 const { generateToken } = require("../middleware/jwtAuth");
-const { sendWelcomeEmail } = require("../utils/emailService");
+const { sendWelcomeEmail, sendOTPEmail } = require("../utils/emailService");
 const path = require("path");
 
 const storage = multer.diskStorage({
@@ -165,5 +165,81 @@ router.get("/auth/google/callback",
     res.redirect("/");
   }
 ); 
+
+// FORGOT PASSWORD - REQUEST OTP
+router.get("/forgot-password", (req, res) => {
+  res.render("auth/forgot-password");
+});
+
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ error: "No account found with this email" });
+    }
+
+    // Generate 6-digit PIN
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.resetPasswordOTP = otp;
+    user.resetPasswordExpires = expiry;
+    await user.save();
+
+    await sendOTPEmail(email, user.name, otp);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// VERIFY OTP
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await User.findOne({
+      email,
+      resetPasswordOTP: otp,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired PIN" });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// RESET PASSWORD
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+    const user = await User.findOne({
+      email,
+      resetPasswordOTP: otp,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Unauthorized or expired PIN session" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = router;

@@ -46,6 +46,10 @@
       background: rgba(255, 255, 255, 0.08);
       box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
     }
+    @media (max-width: 480px) {
+      .auth-glass-card { padding: 2rem 1.5rem; }
+      .logo a { font-size: 2rem !important; }
+    }
   </style>
 </head>
 <body>
@@ -84,6 +88,9 @@
     </form>
 
     <footer style="margin-top: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+      <div style="margin-bottom: 10px;">
+        <a href="/forgot-password" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Forgot Password?</a>
+      </div>
       Don't have an account? <a href="/register" style="color: var(--primary); font-weight: 700; text-decoration: none;">Create one &rarr;</a>
     </footer>
   </div>

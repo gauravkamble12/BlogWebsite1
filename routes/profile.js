@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 const Blog = require("../models/Blog");
 const Follow = require("../models/Follow");
 const multer = require("multer");
@@ -63,6 +64,34 @@ router.get("/profile/:id", async (req, res) => {
     res.render("profile", { profileUser: user, blogs, followers });
   } catch (err) {
     res.status(500).render("404");
+  }
+});
+
+// CHANGE PASSWORD (LOGGED IN)
+router.post("/profile/change-password", async (req, res) => {
+  if (!req.session.userId) return res.redirect("/login");
+
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).send("New passwords do not match");
+    }
+
+    const user = await User.findById(req.session.userId);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).send("Current password is incorrect");
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.redirect(`/profile/${user._id}?success=password_changed`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
   }
 });
 

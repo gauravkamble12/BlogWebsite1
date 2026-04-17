@@ -113,6 +113,27 @@
           <a href="/profile/<%= user._id %>" class="btn-primary" style="flex: 1; padding: 16px; background: #64748b; text-align: center; text-decoration: none;">Cancel</a>
         </div>
       </form>
+
+      <div style="margin: 60px 0; border-top: 2px solid var(--glass-border); padding-top: 40px;">
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px;">Security</h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">Update your authentication details.</p>
+        
+        <form action="/profile/change-password" method="POST">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" name="currentPassword" required placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" name="newPassword" required placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" name="confirmPassword" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 16px; background: var(--text-main);">Update Password</button>
+        </form>
+      </div>
     </div>
   </main>
 
