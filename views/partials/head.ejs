@@ -18,7 +18,7 @@
 <meta name="twitter:title" content="<%= typeof blog !== 'undefined' ? blog.title : 'GK Blog' %>">
 <meta name="twitter:description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Insights for the modern mind.' %>">
 <meta name="twitter:image" content="<%= (typeof blog !== 'undefined' && blog.images && blog.images.length > 0) ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>">
-
+<meta name="google-site-verification" content="p9EjGKPgnY1TaMyKTTa_UUkRNRVH2oPLpqBWyKQDLk0" />
 <!-- Structured Data -->
 <% if (typeof blog !== 'undefined') { %>
 <script type="application/ld+json">
