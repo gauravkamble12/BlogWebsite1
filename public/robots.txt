@@ -5,4 +5,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /api/
 
-Sitemap: https://gkblog.com/sitemap.xml
+Sitemap: https://blogwebsite1-q22u.onrender.com/sitemap.xml

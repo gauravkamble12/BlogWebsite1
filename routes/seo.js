@@ -8,7 +8,7 @@ const Blog = require('../models/Blog');
 router.get('/sitemap.xml', async (req, res) => {
   try {
     const blogs = await Blog.find({}).select('_id updatedAt');
-    const baseUrl = 'https://gkblog.com';
+    const baseUrl = process.env.BASE_URL || 'https://blogwebsite1-q22u.onrender.com';
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

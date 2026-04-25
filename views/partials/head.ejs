@@ -10,7 +10,7 @@
 <meta property="og:title" content="<%= typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog') %>">
 <meta property="og:description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore thoughts that matter, designed for deep engagement.' %>">
 <meta property="og:image" content="<%= (typeof blog !== 'undefined' && blog.images && blog.images.length > 0) ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>">
-<meta property="og:url" content="https://gkblog.com<%= typeof blog !== 'undefined' ? '/blogs/' + blog._id : '' %>">
+<meta property="og:url" content="https://blogwebsite1-q22u.onrender.com<%= typeof blog !== 'undefined' ? '/blogs/' + blog._id : '' %>">
 <meta property="og:site_name" content="GK BLOG">
 
 <!-- Twitter -->
