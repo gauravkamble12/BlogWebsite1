@@ -1,8 +1,8 @@
 User-agent: *
-Allow: /
 Disallow: /admin/
 Disallow: /login
 Disallow: /register
 Disallow: /api/
+Allow: /
 
 Sitemap: https://blogwebsite1-q22u.onrender.com/sitemap.xml
