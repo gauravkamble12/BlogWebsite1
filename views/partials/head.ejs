@@ -2,23 +2,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Core SEO -->
-<title><%= typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog') %> | Insights for the Modern Mind</title>
-<meta name="description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore a curated collection of stories, deep dives, and perspectives on technology, lifestyle, and design.' %>">
+<title><%= (typeof blog !== 'undefined' && blog.metaTitle) ? blog.metaTitle : (typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog')) %> | Insights for the Modern Mind</title>
+<meta name="description" content="<%= (typeof blog !== 'undefined' && blog.metaDescription) ? blog.metaDescription : ((typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore a curated collection of stories, deep dives, and perspectives on technology, lifestyle, and design.') %>">
 
 <!-- OpenGraph / Social Media -->
 <meta property="og:type" content="<%= typeof blog !== 'undefined' ? 'article' : 'website' %>">
-<meta property="og:title" content="<%= typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog') %>">
-<meta property="og:description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore thoughts that matter, designed for deep engagement.' %>">
+<meta property="og:title" content="<%= (typeof blog !== 'undefined' && blog.metaTitle) ? blog.metaTitle : (typeof title !== 'undefined' ? title : (typeof blog !== 'undefined' ? blog.title : 'GK Blog')) %>">
+<meta property="og:description" content="<%= (typeof blog !== 'undefined' && blog.metaDescription) ? blog.metaDescription : ((typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Explore thoughts that matter, designed for deep engagement.') %>">
 <meta property="og:image" content="<%= (typeof blog !== 'undefined' && blog.images && blog.images.length > 0) ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>">
-<meta property="og:url" content="https://blogwebsite1-q22u.onrender.com<%= typeof blog !== 'undefined' ? '/blogs/' + blog._id : '' %>">
+<meta property="og:url" content="https://blogwebsite1-q22u.onrender.com<%= typeof blog !== 'undefined' ? '/blog/' + blog.slug : '' %>">
 <meta property="og:site_name" content="GK BLOG">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<%= typeof blog !== 'undefined' ? blog.title : 'GK Blog' %>">
-<meta name="twitter:description" content="<%= (typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Insights for the modern mind.' %>">
+<meta name="twitter:description" content="<%= (typeof blog !== 'undefined' && blog.metaDescription) ? blog.metaDescription : ((typeof blog !== 'undefined' && blog.content) ? blog.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : 'Insights for the modern mind.') %>">
 <meta name="twitter:image" content="<%= (typeof blog !== 'undefined' && blog.images && blog.images.length > 0) ? (blog.images[0].startsWith('http') ? blog.images[0] : '/uploads/' + blog.images[0]) : '/favicon.ico' %>">
 <meta name="google-site-verification" content="p9EjGKPgnY1TaMyKTTa_UUkRNRVH2oPLpqBWyKQDLk0" />
+
 <!-- Structured Data -->
 <% if (typeof blog !== 'undefined') { %>
 <script type="application/ld+json">
@@ -32,7 +33,12 @@
     "name": "<%= blog.author ? blog.author.name : 'GK' %>"
   },
   "datePublished": "<%= blog.createdAt %>",
-  "description": "<%= blog.content.replace(/<[^>]*>/g, '').substring(0, 160) %>"
+  "dateModified": "<%= blog.updatedAt %>",
+  "description": "<%= blog.metaDescription || blog.content.replace(/<[^>]*>/g, '').substring(0, 160) %>",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://blogwebsite1-q22u.onrender.com/blog/<%= blog.slug %>"
+  }
 }
 </script>
 <% } %>

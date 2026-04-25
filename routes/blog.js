@@ -127,6 +127,8 @@ router.post('/blogs', upload.array('images', 5), blogValidation, async (req, res
       category: req.body.category || 'Other',
       tags,
       author: req.session.userId,
+      metaTitle: req.body.metaTitle,
+      metaDescription: req.body.metaDescription
     });
 
     await blog.save();
@@ -195,7 +197,9 @@ router.post('/blogs/:id/update', auth, async (req, res) => {
       title: req.body.title,
       content: req.body.content,
       category: req.body.category,
-      tags: tags
+      tags: tags,
+      metaTitle: req.body.metaTitle,
+      metaDescription: req.body.metaDescription
     });
 
     return res.status(200).json({ success: true, redirectUrl: '/' });
@@ -223,28 +227,38 @@ router.post('/blogs/:id/delete', auth, async (req, res) => {
     res.redirect('/');
   }
 });
-// SHOW SINGLE BLOG (PUBLIC)
+// SHOW SINGLE BLOG (PUBLIC) - REDIRECT ID TO SLUG
 router.get('/blogs/:id', async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).populate('author');
+    const blog = await Blog.findById(req.params.id);
+    if (blog && blog.slug) {
+      return res.redirect(301, `/blog/${blog.slug}`);
+    }
+    res.redirect('/');
+  } catch (err) {
+    res.redirect('/');
+  }
+});
+
+// SHOW SINGLE BLOG BY SLUG
+router.get('/blog/:slug', async (req, res) => {
+  try {
+    const blog = await Blog.findOne({ slug: req.params.slug }).populate('author');
 
     if (!blog) {
-      return res.redirect('/');
+      return res.status(404).render('404');
     }
 
     const likesCount = await Like.countDocuments({ blog: blog._id });
     const comments = await Comment.find({ blog: blog._id }).populate('user');
     
-    // Calculate Reading Time
     const readingTime = calculateReadingTime(blog.content);
 
-    // Fetch Related Blogs
     const relatedBlogs = await Blog.find({
       category: blog.category,
       _id: { $ne: blog._id }
     }).limit(3).populate('author');
 
-    // Check if current user follows author
     let isFollowing = false;
     if (req.session.userId && blog.author) {
       const Follow = require('../models/Follow');

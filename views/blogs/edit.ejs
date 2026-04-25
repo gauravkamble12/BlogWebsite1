@@ -98,6 +98,23 @@
           <input type="hidden" name="content" id="content">
         </div>
 
+        <!-- SEO SETTINGS SECTION -->
+        <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px dashed var(--glass-border);">
+          <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text-main);">SEO Optimization (Optional)</h3>
+          
+          <div class="form-group">
+            <label>Meta Title (Google Search Title)</label>
+            <input type="text" name="metaTitle" value="<%= blog.metaTitle || '' %>" placeholder="Custom title for Google search results...">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Recommended: 50-60 characters.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Meta Description (Search Snippet)</label>
+            <input type="text" name="metaDescription" value="<%= blog.metaDescription || '' %>" placeholder="Brief summary for search results...">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Recommended: 150-160 characters.</small>
+          </div>
+        </div>
+
         <div style="margin-top: 4rem; display: flex; gap: 20px;">
           <button type="submit" class="btn-primary" style="flex: 2; padding: 20px;">Save Changes</button>
           <a href="javascript:history.back()" style="flex: 1; display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted); font-weight: 700; border: 1px solid var(--glass-border); border-radius: 50px;">Discard</a>

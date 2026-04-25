@@ -156,7 +156,7 @@
 
               <% } %>
               <div class="card-content">
-                <h4 style="font-size: 1.25rem; font-weight: 800;"><a href="/blogs/<%= related._id %>" style="color: white; text-decoration: none;"><%= related.title %></a></h4>
+                <h4 style="font-size: 1.25rem; font-weight: 800;"><a href="/blog/<%= related.slug %>" style="color: white; text-decoration: none;"><%= related.title %></a></h4>
                 <span style="font-size: 0.85rem; color: var(--text-muted);"><%= related.author ? related.author.name : 'Author' %></span>
               </div>
             </div>

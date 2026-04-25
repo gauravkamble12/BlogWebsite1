@@ -7,7 +7,7 @@ const Blog = require('../models/Blog');
  */
 router.get('/sitemap.xml', async (req, res) => {
   try {
-    const blogs = await Blog.find({}).select('_id updatedAt');
+    const blogs = await Blog.find({ status: 'published' }).select('slug updatedAt');
     const baseUrl = process.env.BASE_URL || 'https://blogwebsite1-q22u.onrender.com';
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -19,13 +19,15 @@ router.get('/sitemap.xml', async (req, res) => {
   </url>`;
 
     blogs.forEach((blog) => {
-      xml += `
+      if (blog.slug) {
+        xml += `
   <url>
-    <loc>${baseUrl}/blogs/${blog._id}</loc>
+    <loc>${baseUrl}/blog/${blog.slug}</loc>
     <lastmod>${blog.updatedAt.toISOString().split('T')[0]}</lastmod>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>`;
+      }
     });
 
     xml += `
